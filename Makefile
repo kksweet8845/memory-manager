@@ -1,5 +1,14 @@
 CC = gcc -std=c99
-CCFLAGS = -Wall -O3
+CCFLAGS = -Wall -O2 -g -I./include
+
+dependency = \
+disk \
+pagetable \
+phytable \
+pra \
+sim
+
+
 
 EXEC = memory_manager
 
@@ -12,4 +21,4 @@ $(GIT_HOOKS):
 	scripts/install-git-hooks
 
 clean:
-	rm -rf $(EXEC)
+	rm -rf $(EXEC) *.o
