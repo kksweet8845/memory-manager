@@ -138,11 +138,12 @@ void miss(
 {
     phy_ptr_t item = NULL;
     int pfi = -1, i = 0;
-    int in_use_bit, present_bit;
+    int in_use_bit, present_bit, pfi_dbi;
     double ac_prn, in_prn;
     in_prn = ceil((double)pfn/2);
     ac_prn = floor((double)pfn/2);
     page_ptr_t pageItem = list_entry(page_node, pageItem_t, list);
+    pfi_dbi = pageItem->pfi_dbi;
     // list_for_each_entry(item , phy_head, list) i++;
     // printf("%d numbers\n", i);
     pra_ptr_t praItem = NULL;
@@ -225,7 +226,7 @@ void miss(
         else if(in_use_bit == USED
                 && present_bit == NOTINMEM)
         {
-            report_miss(item->pfi, -1, item->vpi, -1, pageItem->pfi_dbi);
+            report_miss(item->pfi, -1, item->vpi, -1, pfi_dbi);
         }
     }
 
@@ -330,7 +331,7 @@ void run_traces(
         for(int i=0; i<vpn; i++)
         {
             page_ptr_t pi = list_entry(page_lookup[i], pageItem_t, list);
-            printf("%d : in_use : %d, present_bit :%d\n", i, pi->in_use_bit, pi->present_bit);
+            printf("%d : pfi_dbi: %d, in_use : %d, present_bit :%d\n", i, pi->pfi_dbi, pi->in_use_bit, pi->present_bit);
         }
         printf("\nPhysical Table============\n");
         for(int i=0; i<pfn; i++)
