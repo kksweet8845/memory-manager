@@ -318,22 +318,6 @@ swap_ptr_t replace_inactive(int vpi, int pfi, struct list_head* in_head)
     }
 }
 
-// void refill_inactive(int vpi, int pfi, struct list_head* in_head){
-//     while(1){
-//         pra_ptr_t lastEntry = list_last_entry(in_head, praItem_t, list);
-//         page_ptr_t pageItem = list_entry(page_lookupT[vpi], pageItem_t, list);
-//         if(lastEntry->ref_bit == 0){
-//             list_del_init(&lastEntry->list);
-//             list_add(&lastEntry->list, in_head);
-//             return;
-//         }else{
-//             lastEntry->ref_bit = 0;
-//             list_del_init(&lastEntry->list);
-//             list_add(&lastEntry->list, in_head);
-//         }
-//     }
-// }
-
 
 void replace_active(
     int vpi,
@@ -344,14 +328,13 @@ void replace_active(
 )
 {
     struct list_head *node = NULL;
-    int i=0;
+    int i = 0;
     while(1)
     {
         pra_ptr_t lastEntry = list_last_entry(ac_head, praItem_t, list);
         page_ptr_t pageItem = list_entry(page_lookupT[vpi], pageItem_t, list);
         if(lastEntry->ref_bit == 0)
         {
-            list_for_each(node, in_head) i++;
             list_del_init(&lastEntry->list);
             list_add_tail(&lastEntry->list, in_head);
             return;

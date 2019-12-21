@@ -144,8 +144,6 @@ void miss(
     ac_prn = floor((double)pfn/2);
     page_ptr_t pageItem = list_entry(page_node, pageItem_t, list);
     pfi_dbi = pageItem->pfi_dbi;
-    // list_for_each_entry(item , phy_head, list) i++;
-    // printf("%d numbers\n", i);
     pra_ptr_t praItem = NULL;
     if(type == SLRU)
     {
@@ -162,43 +160,7 @@ void miss(
         find_empty_frame(pfn, vpi, &pfi, &item);
         in_use_bit = pageItem->in_use_bit;
         present_bit = pageItem->present_bit;
-        // for(int i=0;i<pfn;i++){
-        //     // printf("%p\n", phy_lookupT[i]->next->next);
-        //     item = list_entry(phy_lookupT[i], phyItem_t, list);
-        //     if(item->vpi == -1){
-        //         item->vpi = vpi;
-        //         pfi = item->pfi;
-        //         in_use_bit = pageItem->in_use_bit;
-        //         present_bit = pageItem->present_bit;
-        //         // if(pageItem->in_use_bit == NOT_USED ){
-        //         //     report_miss(item->pfi, -1, item->vpi, -1, -1);
-        //         // }else if(pageItem->in_use_bit == USED
-        //         //     && pageItem->present_bit == NOTINMEM){
-        //         //     report_miss(item->pfi, -1, item->vpi, -1, pageItem->pfi_dbi);
-        //         // }
-        //         break;
-        //     }
-        // }
     }
-    // printf("%p\n", &list_entry(phy_head, phyItem_t, list)->list );
-    // list_for_each_entry(item , phy_head, list){
-    //     printf("Should go here here %d\n", i++);
-    //     printf("%p\n", phy_head->next);
-    //     printf("%p  %p\n", &item->list, phy_head);
-    //     printf("next : %p", item->list.next);
-    //     if(item->vpi == -1){
-    //         item->vpi = vpi;
-    //         pfi = item->pfi;
-    //         if(pageItem->in_use_bit == NOT_USED){
-    //             report_miss(item->pfi, -1, item->vpi, -1, -1);
-    //         }else if(pageItem->in_use_bit == USED
-    //             && pageItem->present_bit == NOTINMEM){
-    //             report_miss(item->pfi, -1, item->vpi, -1, pageItem->pfi_dbi);
-    //         }
-    //         break;
-    //     }
-    // }
-
     //replacement algorithm
     swap_ptr_t info = NULL;
     switch(type)
