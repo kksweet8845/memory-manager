@@ -420,6 +420,11 @@ static inline void list_move_tail(struct list_head *node,
     for (entry = list_entry((head)->next, __typeof__(*entry), member); \
          &entry->member != (head);                                     \
          entry = list_entry(entry->member.next, __typeof__(*entry), member))
+
+#define list_for_each_entry_repeat(entry, head, member)                       \
+    for (entry = list_entry((head)->next, __typeof__(*entry), member); \
+         ;                                     \
+         entry = list_entry(entry->member.next, __typeof__(*entry), member))
 #endif
 
 /**

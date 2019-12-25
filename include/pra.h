@@ -14,7 +14,7 @@
 #define rd(ref, dir) ((ref << 1) | dir)
 
 extern struct list_head **page_lookupT, **phy_lookupT;
-
+extern struct list_head *esca_cur;
 
 pra_ptr_t new_praItem(int vpi, int pfi, char ref, char dir, struct list_head *head, int type)
 {
@@ -233,32 +233,45 @@ swap_ptr_t esca_algo(
     else
     {
         int state = 1;
-        while(state != 0)
+        // while(state != 0)
+        // {
+        if(esca_cur == NULL)
         {
-            list_for_each_entry(item, head, list)
-            {
-                switch(rd(item->ref_bit, item->dirty_bit))
-                {
-                case 0:
-                    if(state == 1)
-                        return swap_phy_pra(vpi, item->vpi, item->pfi, w_r_type, head);
-                    break;
-                case 1:
-                    if(state == 2)
-                        return swap_phy_pra(vpi, item->vpi, item->pfi, w_r_type, head);
-                    break;
-                case 2:
-                case 3:
-                    if(state == 2)
-                        item->ref_bit = 0;
-                    break;
-                }
-            }
-            if(state == 1)
-                state <<= 1;
-            else
-                state >>= 1;
+            esca_cur = head;
         }
+        list_for_each_entry_repeat(item, esca_cur, list)
+        {
+            if(&item->list == head)
+                goto change_state;
+            switch(rd(item->ref_bit, item->dirty_bit))
+            {
+            case 0:
+                if(state == 1)
+                {
+                    esca_cur = &(item->list);
+                    return swap_phy_pra(vpi, item->vpi, item->pfi, w_r_type, head);
+                }
+                break;
+            case 1:
+                if(state == 2)
+                {
+                    esca_cur = &(item->list);
+                    return swap_phy_pra(vpi, item->vpi, item->pfi, w_r_type, head);
+                }
+                break;
+            case 2:
+            case 3:
+                if(state == 2)
+                    item->ref_bit = 0;
+                break;
+            }
+change_state:
+            if(&item->list == esca_cur && state == 1)
+                state <<=1;
+            else if(&item->list == esca_cur && state == 2)
+                state >>=1;
+        }
+        // }
         printf("Error when esca algorithm\n");
         return NULL;
     }
@@ -336,7 +349,7 @@ void replace_active(
         if(lastEntry->ref_bit == 0)
         {
             list_del_init(&lastEntry->list);
-            list_add_tail(&lastEntry->list, in_head);
+            list_add(&lastEntry->list, in_head);
             return;
         }
         else
@@ -373,6 +386,7 @@ swap_ptr_t slru_algo(
         }
         else if(item->vpi == vpi && item->ref_bit == 1)
         {
+            i = 0;
             list_for_each(node, ac_head) i++;
             if(ac_prn == 0)
             {
@@ -380,11 +394,8 @@ swap_ptr_t slru_algo(
                 list_add(&item->list, in_head);
                 return NULL;
             }
-            if(i < ac_prn)
-            {
-                item->ref_bit = 0;
-            }
-            else
+            item->ref_bit = 0;
+            if(i == ac_prn)
             {
                 replace_active(item->vpi, in_prn, ac_prn, in_head, ac_head);
             }
@@ -411,8 +422,13 @@ swap_ptr_t slru_algo(
         if( i < in_prn )
         {
             pra_ptr_t newNode = new_praItem(vpi, pfi, 1, 0, in_head, SLRU);
+            page_ptr_t pageItem = list_entry(page_lookupT[vpi], pageItem_t, list);
             if(newNode == NULL)
                 printf("Error in slru in pfi != -1\n");
+            if(pageItem->in_use_bit == USED)
+            {
+                disk_update(&pageItem->pfi_dbi);
+            }
             pageTable_update(vpi, pfi, 1, 0, USED, INMEM, in_head, page_lookupT, SLRU);
             phyTable_update(pfi, vpi, phy_lookupT);
             return NULL;

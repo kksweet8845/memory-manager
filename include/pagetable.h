@@ -90,6 +90,8 @@ void pageTable_update(
 {
     page_ptr_t item = NULL;
     pra_ptr_t praItem = NULL;
+    int cur_pfi;
+    char cur_present_bit;
     switch(type)
     {
     case FIFO:
@@ -100,6 +102,7 @@ void pageTable_update(
         break;
     case ESCA:
         item = list_entry(lookup[vpi], pageItem_t, list);
+        cur_present_bit = item->present_bit;
         item->in_use_bit = in_use_bit;
         item->present_bit = present_bit;
         item->pfi_dbi = pfi_dbi;
@@ -107,7 +110,10 @@ void pageTable_update(
             break;
         praItem = find_entry_with_pfi(head, pfi_dbi);
         praItem->ref_bit = ref;
-        praItem->dirty_bit = praItem->dirty_bit == -1 ? dir : praItem->dirty_bit | dir;
+        if(cur_present_bit == INMEM)
+            praItem->dirty_bit = praItem->dirty_bit == -1 ? dir : praItem->dirty_bit | dir;
+        else
+            praItem->dirty_bit = dir;
         praItem->vpi = vpi;
         break;
     case SLRU:

@@ -11,6 +11,7 @@
 
 
 struct list_head trace_head, page_head, phy_head;
+struct list_head *esca_cur;
 struct list_head **page_lookupT, **phy_lookupT;
 int disk[MAX_DISK_SIZE];
 struct list_head pra_in_head, pra_ac_head;
@@ -22,6 +23,7 @@ void init_head()
     INIT_LIST_HEAD(&phy_head);
     INIT_LIST_HEAD(&pra_in_head);
     INIT_LIST_HEAD(&pra_ac_head);
+    esca_cur = NULL;
 }
 
 int main()

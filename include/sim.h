@@ -15,7 +15,7 @@
 #define HIT 0
 
 extern struct list_head **page_lookupT, **phy_loopupT;
-
+extern struct list_head *esca_cur;
 
 trace_ptr_t new_traceItem(int index, int type)
 {
@@ -30,12 +30,13 @@ void read_traces(int *policy, int* vpn, int*pfn, struct list_head *head)
 {
 
     char buf[30], temp[30];
-    unsigned char i = 0, len;
+    unsigned long long i = 0, len;
     char* cur = NULL, *src, **ptr = NULL;
     int index;
-    while( fgets(buf, 30, stdin) != NULL )
+    int err;
+    trace_ptr_t tptr = NULL;
+    while( fgets(buf, 30, stdin) != NULL && !(err = ferror(stdin)))
     {
-
         switch(i++)
         {
         case 0:
@@ -82,7 +83,7 @@ void read_traces(int *policy, int* vpn, int*pfn, struct list_head *head)
                 memset(temp, '\0', strlen(temp));
                 memcpy((void*)temp, (void*) cur, len);
                 index = strtol(temp, ptr, 10);
-                trace_ptr_t tptr = new_traceItem(index, READTYPE);
+                tptr = new_traceItem(index, READTYPE);
                 list_add_tail(&tptr->list, head);
             }
             else if(strncmp(src, "Write", 5) == 0)
@@ -94,11 +95,16 @@ void read_traces(int *policy, int* vpn, int*pfn, struct list_head *head)
                 memset(temp, '\0', strlen(temp));
                 memcpy(temp, cur, len);
                 index = strtol(temp, ptr, 10);
-                trace_ptr_t tptr = new_traceItem(index, WRITETYPE);
+                tptr = new_traceItem(index, WRITETYPE);
                 list_add_tail(&tptr->list, head);
             }
             break;
         }
+    }
+    if(err != 0)
+    {
+        printf(" error : %d\n", err);
+        exit(0);
     }
 
     return;
@@ -283,12 +289,22 @@ void run_traces(
     trace_ptr_t item, safe;
     float total = 0;
     float miss_rate = 0;
+    int i= 0;
     list_for_each_entry_safe(item, safe, trace_head, list)
     {
+        i++;
         total++;
         miss_rate += execute_trace(item, trace_head, page_head, phy_head, page_lookup, phy_lookup, vpn, pfn, type);
 #define DE
 #ifdef DEBUG
+        printf("id: %d\n", i);
+
+        printf("Disk Table ==============\n");
+        for(int i=0; i<5; i++)
+        {
+            printf("%d : %d\n", i, disk[i]);
+        }
+
         printf("Page Table ==============\n");
         for(int i=0; i<vpn; i++)
         {
@@ -305,7 +321,7 @@ void run_traces(
         printf("\n");
         list_for_each_entry(praItem, &pra_in_head, list)
         {
-            printf("in vpi : %d, ref : %d, dir : %d\n", praItem->vpi, praItem->ref_bit, praItem->dirty_bit);
+            printf("%s in vpi : %d, ref : %d, dir : %d\n", type == ESCA ? (esca_cur == &praItem->list ? "->" : "") : "", praItem->vpi, praItem->ref_bit, praItem->dirty_bit);
         }
         if(type == SLRU)
         {
